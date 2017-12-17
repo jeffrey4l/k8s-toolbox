@@ -1,0 +1,44 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-for-nginx-deployment
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    app: nginx
+  type: NodePort
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+
+metadata:
+  name: ingress-for-nginx-deployment
+
+spec:
+  rules:
+    - http:
+        paths: 
+          - path: /
+            backend:
+              serviceName: nginx-deployment
+              servicePort: 80

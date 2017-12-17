@@ -1,0 +1,44 @@
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: volume-demo
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        name: volume-demo
+    spec:
+      containers:
+        - name: volume-demo
+          image: nginx
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: volume-provider
+      initContainers:
+        - name: init-index
+          image: busybox
+          command:
+            - sh
+            - -c
+            - "echo $(hostname) > /usr/share/nginx/html/index.html"
+          volumeMounts:
+            - mountPath: /usr/share/nginx/html
+              name: volume-provider
+      volumes:
+        - name: volume-provider
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-for-volume-demo
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  selector:
+    name: volume-demo
+  type: NodePort

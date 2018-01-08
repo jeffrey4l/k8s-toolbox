@@ -2,12 +2,12 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: nginx
+  name: echoserver
   labels:
-    app: nginx
+    app: echoserver
 spec:
   containers:
-  - name: nginx
-    image: nginx
+  - name: echoserver
+    image: googlecontainer/echoserver:1.5
     ports:
-    - containerPort: 80
+    - containerPort: 8080

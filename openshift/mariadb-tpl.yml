@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: mariadb-template
+  annotations:
+    description: "Description"
+    iconClass: "icon-mariadb"
+    tags: "database"
+objects:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    name: mariadb-${POD_NAME}
+  spec:
+    containers:
+      - env:
+          - name: MYSQL_ROOT_PASSWORD
+            value: ${MARIADB_PASSWORD}
+        image: mariadb
+        name: database
+        ports:
+          - containerPort: 3306
+            protocol: TCP
+parameters:
+  - description: Password used for mariadb authentication
+    from: '[A-Z0-9]{8}'
+    generate: expression
+    name: MARIADB_PASSWORD
+  - description: pod NAME
+    from: '[a-z0-9]{8}'
+    generate: expression
+    name: POD_NAME
+labels:
+  mariadb: database

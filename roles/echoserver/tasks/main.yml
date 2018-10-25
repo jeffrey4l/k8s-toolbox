@@ -1,0 +1,14 @@
+---
+- name: Install echoserver
+  include_tasks: "provision.yml"
+  when:
+    - action == 'provision'
+
+- name: Uninstall echoserver
+  include_tasks: "unprovision.yml"
+  when:
+    - action == 'unprovision'
+
+- include_tasks: "{{ action }}.yml"
+  when:
+    - action not in ['provision', 'unprovision']

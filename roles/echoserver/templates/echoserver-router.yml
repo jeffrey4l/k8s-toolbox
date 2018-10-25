@@ -1,0 +1,12 @@
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: echoserver
+spec:
+  host: echoserver.{{ namespace }}.local
+  to:
+    kind: Service
+    name: echoserver
+  port:
+    targetPort: http

@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: centos7
+  labels:
+    app: centos7
+spec:
+  containers:
+    - name: centos7
+      image: centos:7

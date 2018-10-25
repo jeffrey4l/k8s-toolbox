@@ -1,0 +1,60 @@
+---
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: alpine
+spec:
+  dockerImageRepository: alpine
+---
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: gogs
+---
+kind: BuildConfig
+apiVersion: v1
+metadata:
+  name: gogs-build
+spec:
+  runPolicy: Serial
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+  source:
+    git:
+      uri: https://github.com/gogits/gogs
+  strategy:
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: alpine:latest
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: "ImageStreamTag"
+      name: "gogs:latest"
+---
+kind: DeploymentConfig
+apiVersion: v1
+metadata:
+  name: gogs
+spec:
+  trigger:
+    - type: ImageChange
+      from:
+        kind: ImageStreamTag
+        name: gogs:latest
+    - type: ConfigChange
+  replicas: 1
+  selector:
+    app: gogs
+  template:
+    metadata:
+      name: gogs
+      labels:
+        app: gogs
+    spec:
+      containers:
+        - name: gogs
+          image: gogs
+      restartPolicy: Always

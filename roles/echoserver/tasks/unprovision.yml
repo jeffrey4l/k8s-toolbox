@@ -1,0 +1,52 @@
+---
+- name: Remove echo server router
+  k8s:
+    namespace: "{{ namespace }}"
+    definition: "{{ lookup('template', 'echoserver-router.yml')| from_yaml }}"
+    state: absent
+
+- name: remove echo server service
+  k8s:
+    namespace: "{{ namespace }}"
+    definition: "{{ lookup('template', 'echoserver-service.yml')|from_yaml }}"
+    state: absent
+
+- name: remove echo server deployment config
+  k8s:
+    namespace: "{{ namespace }}"
+    definition: "{{ lookup('template', 'echoserver-deployment.yml')|from_yaml }}"
+    state: absent
+
+# NOTE: json merge not work as expected
+#    - name: unbind serviceaccount from anyuid
+#      vars:
+#        sa: "{{ 'system:serviceaccount:' + namespace + ':' + serviceaccount }}"
+#      k8s:
+#        namespace: "{{ namespace }}"
+#        name: anyuid
+#        kind: SecurityContextConstraints
+#        merge_type: json
+#        definition:
+#          - op: "remove"
+#            path: '/users/{{ (anyuid.stdout|from_yaml).users.index(sa) }}'
+#      when:
+#        - sa in (anyuid.stdout|from_yaml).users
+#        - provision == 'uninstall'
+
+- fail:
+
+- name: get anyuid bind users
+  command: oc get scc anyuid -o yaml
+  register: anyuid
+  changed_when: false
+
+- name: unbind echoserver serviceaccount from anyuid scc
+  command: "oc --namespace {{ namespace }} adm policy remove-scc-from-user anyuid -z echoserver"
+  when:
+    - ('system:serviceaccount:default:' + serviceaccount) in  (anyuid.stdout|from_yaml).users
+
+- name: remove service account
+  k8s:
+    namespace: "{{ namespace }}"
+    definition: "{{ lookup('template', 'echoserver-serviceaccount.yml') | from_yaml }}"
+    state: absent

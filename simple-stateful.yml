@@ -1,0 +1,48 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: echo-stateful-svc
+spec:
+  ports:
+    - name: web
+      port: 80
+      targetPort: 8080
+  selector:
+    app: echo-stateful
+  type: ClusterIP
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: echo-stateful
+spec:
+  selector:
+    matchLabels:
+      app: echo-stateful
+  serviceName: "nginx"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: echo-stateful
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: echo-stateful
+        image: googlecontainer/echoserver:1.5
+        ports:
+        - containerPort: 8080
+          name: web
+        livenessProbe:
+          httpGet:
+            port: web
+            path: /
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            port: web
+            path: /
+          initialDelaySeconds: 10
+          periodSeconds: 10

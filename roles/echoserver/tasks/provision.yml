@@ -1,0 +1,45 @@
+---
+- name: create service account
+  k8s:
+    namespace: "{{ namespace }}"
+    definition: "{{ lookup('template', 'echoserver-serviceaccount.yml') | from_yaml }}"
+
+# NOTE(jeffrey4l): json merge does not work
+#    - name: bind serviceaccount to anyuid
+#      k8s:
+#        namespace: "{{ namespace }}"
+#        kind: SecurityContextConstraints
+#        api_version: security.openshift.io/v1
+#        name: anyuid
+#        merge_type: json
+#        definition:
+#          - op: "add"
+#            path: "/users/-"
+#            value: "system:serviceaccount:{{ namespace }}:{{ serviceaccount }}"
+#      when:
+#        - provision == 'install'
+
+- name: get anyuid bind users
+  command: oc get scc anyuid -o yaml
+  register: anyuid
+  changed_when: false
+
+- name: bind echoserver serviceaccount with anyuid scc
+  command: "oc --namespace {{ namespace }} adm policy add-scc-to-user anyuid -z echoserver"
+  when:
+    - ('system:serviceaccount:' + namespace + ':' + serviceaccount) not in  (anyuid.stdout|from_yaml).users
+
+- name: Create echo server deployment config
+  k8s:
+    namespace: "{{ namespace }}"
+    definition: "{{ lookup('template', 'echoserver-deployment.yml')|from_yaml }}"
+
+- name: Create echo server service
+  k8s:
+    namespace: "{{ namespace }}"
+    definition: "{{ lookup('template', 'echoserver-service.yml')|from_yaml }}"
+
+- name: Create echo server router
+  k8s:
+    namespace: "{{ namespace }}"
+    definition: "{{ lookup('template', 'echoserver-router.yml')| from_yaml }}"

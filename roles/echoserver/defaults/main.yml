@@ -1,0 +1,3 @@
+---
+serviceaccount: echoserver
+action: provision

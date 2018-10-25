@@ -9,9 +9,22 @@ spec:
   accessModes:
   - ReadWriteOnce 
   nfs: 
-    path: /data
-    server: 10.2.0.60
+    path: /data/asb_etcd
+    server: 10.3.0.20
   persistentVolumeReclaimPolicy: Recycle 
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: etcd
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
 ---
 apiVersion: v1
 kind: PersistentVolume

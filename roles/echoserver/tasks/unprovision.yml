@@ -31,9 +31,7 @@
 #            path: '/users/{{ (anyuid.stdout|from_yaml).users.index(sa) }}'
 #      when:
 #        - sa in (anyuid.stdout|from_yaml).users
-#        - provision == 'uninstall'
-
-- fail:
+#        - action == 'unprovision'
 
 - name: get anyuid bind users
   command: oc get scc anyuid -o yaml

@@ -17,7 +17,7 @@
 #            path: "/users/-"
 #            value: "system:serviceaccount:{{ namespace }}:{{ serviceaccount }}"
 #      when:
-#        - provision == 'install'
+#        - action = 'provision'
 
 - name: get anyuid bind users
   command: oc get scc anyuid -o yaml

@@ -1,5 +1,0 @@
-- name: remove echo server deployment config
-  k8s:
-    namespace: "{{ namespace }}"
-    definition: "{{ lookup('template', 'echoserver-deployment.yml')|from_yaml }}"
-    state: absent

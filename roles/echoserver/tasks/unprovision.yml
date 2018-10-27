@@ -37,10 +37,13 @@
   command: oc get scc anyuid -o yaml
   register: anyuid
   changed_when: false
+  when:
+    - run_as_root
 
 - name: unbind echoserver serviceaccount from anyuid scc
   command: "oc --namespace {{ namespace }} adm policy remove-scc-from-user anyuid -z echoserver"
   when:
+    - run_as_root
     - ('system:serviceaccount:default:' + serviceaccount) in  (anyuid.stdout|from_yaml).users
 
 - name: remove service account
@@ -48,3 +51,5 @@
     namespace: "{{ namespace }}"
     definition: "{{ lookup('template', 'echoserver-serviceaccount.yml') | from_yaml }}"
     state: absent
+  when:
+    - run_as_root

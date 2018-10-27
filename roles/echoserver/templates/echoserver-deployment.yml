@@ -10,10 +10,12 @@ spec:
       labels:
         app: echoserver
     spec:
+{% if run_as_root %}
       serviceAccountName: echoserver
+{% endif %}
       containers:
         - name: echoserver
-          image: googlecontainer/echoserver:1.5
+          image: "{{ image }}"
           readnessProbe:
             httpGet:
               port: 8080

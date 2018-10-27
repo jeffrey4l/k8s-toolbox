@@ -1,3 +1,7 @@
 ---
 serviceaccount: echoserver
 action: provision
+
+run_as_root: false
+
+image: jeffrey4l/echoserver:1.7

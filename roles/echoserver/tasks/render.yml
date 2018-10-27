@@ -1,0 +1,24 @@
+---
+- name: create temp template render folder
+  tempfile:
+    state: directory
+    prefix: ansible-echoserver-tpl.
+  register: temp_folder
+
+- name: render deployment file
+  template:
+    src: "{{ item.name }}"
+    dest: "{{ temp_folder.path }}/{{ item.name }}"
+  when:
+    - item.render|default(True)
+  with_items:
+    - name: echoserver-deployment.yml
+    - name: echoserver-service.yml
+    - name: echoserver-router.yml
+    - name: echoserver-serviceaccount.yml
+      render: "{{ run_as_root }}"
+
+
+- name: print template folder
+  debug:
+    msg: "All templated are rendered to {{ temp_folder.path }} folder"

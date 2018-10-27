@@ -3,6 +3,8 @@
   k8s:
     namespace: "{{ namespace }}"
     definition: "{{ lookup('template', 'echoserver-serviceaccount.yml') | from_yaml }}"
+  when:
+    - run_as_root
 
 # NOTE(jeffrey4l): json merge does not work
 #    - name: bind serviceaccount to anyuid
@@ -23,10 +25,13 @@
   command: oc get scc anyuid -o yaml
   register: anyuid
   changed_when: false
+  when:
+    - run_as_root
 
 - name: bind echoserver serviceaccount with anyuid scc
   command: "oc --namespace {{ namespace }} adm policy add-scc-to-user anyuid -z echoserver"
   when:
+    - run_as_root
     - ('system:serviceaccount:' + namespace + ':' + serviceaccount) not in  (anyuid.stdout|from_yaml).users
 
 - name: Create echo server deployment config

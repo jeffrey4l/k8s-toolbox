@@ -1,0 +1,108 @@
+---
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: nginx
+spec:
+  dockerImageRepository: nginx
+---
+kind: ImageStream
+apiVersion: v1
+metadata:
+  name: my-nginx
+---
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: my-nginx
+spec:
+  triggers:
+    - type: "ConfigChange"
+  source:
+    dockerfile: |
+      FROM nginx
+      RUN chmod 777 /var/cache/nginx \
+          && chmod 777 /var/run \
+          && sed -i 's,listen\s*80;,listen 8080;,g' /etc/nginx/conf.d/default.conf \
+          && sed -i '/user\s*nginx;/d' /etc/nginx/nginx.conf \
+          && echo "this is built at $(date -R) by ${BUILD_NAME}" > /usr/share/nginx/html/index.html
+      EXPOSE 8080/tcp
+  strategy:
+    dockerStrategy:
+      from:
+        kind: "ImageStreamTag"
+        name: "nginx:latest"
+      env:
+        - name: BUILD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+  output:
+    to:
+      kind: ImageStream
+      name: my-nginx
+  failedBuildsHistoryLimit: 2
+  successfulBuildsHistoryLimit: 2
+---
+kind: "DeploymentConfig"
+apiVersion: "apps.openshift.io/v1"
+metadata:
+  name: "my-nginx"
+spec:
+  template:
+    metadata:
+      labels:
+        name: "my-nginx"
+    spec:
+      containers:
+        - name: "my-nginx"
+          ports:
+            - containerPort: 8080
+              protocol: "TCP"
+          readinessProbe:
+            httpGet:
+              port: 8080
+          livenessProbe:
+            httpGet:
+              port: 8080
+  replicas: 1
+  triggers:
+    - type: "ConfigChange"
+    - type: "ImageChange"
+      imageChangeParams:
+        automatic: true
+        from:
+          kind: "ImageStreamTag"
+          name: "my-nginx:latest"
+        containerNames:
+          - "my-nginx"
+  strategy:
+    type: "Rolling"
+  paused: false
+  revisionHistoryLimit: 2
+  minReadySeconds: 0
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: my-nginx
+spec:
+  selector:
+    name: my-nginx
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+---
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: my-nginx
+spec:
+  host: my-nginx.oc311.310.local
+  to:
+    kind: Service
+    name: my-nginx
+  port:
+    targetPort: http

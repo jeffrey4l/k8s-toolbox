@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: false
+  vars:
+    server: 10.3.0.111
+    path_tpl: "/srv/share-{{ item }}"
+  tasks:
+    - name: init nfs pv
+      k8s:
+        namespace: default
+        definition:
+          apiVersion: v1
+          kind: PersistentVolume
+          metadata:
+            name: "pv{{ item }}"
+          spec:
+            capacity:
+              storage: 5Gi
+            accessModes:
+              - ReadWriteOnce
+            nfs:
+              path: "{{ path_tpl }}"
+              server: "{{ server }}"
+            persistentVolumeReclaimPolicy: Recycle
+      with_sequence: start=1 end=10

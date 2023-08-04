@@ -12,7 +12,6 @@ spec:
       containers:
         - name: nginx
           image: nginx
-
 ---
 apiVersion: v1
 kind: Service

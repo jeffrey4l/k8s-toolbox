@@ -1,0 +1,7 @@
+kind: Student
+apiVersion: xcodest.me/v1
+metadata:
+  name: student-1
+spec:
+  name: zhanglei
+  age: 20

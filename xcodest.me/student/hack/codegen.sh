@@ -15,15 +15,13 @@ source "${CODEGEN_PKG}/kube_codegen.sh"
 
 echo $(pwd)
 kube::codegen::gen_helpers \
-    --input-pkg-root controller-example/pkg/apis \
-    --output-base "$(dirname "${BASH_SOURCE[0]}")/../../" \
+    --input-pkg-root xcodest.me/student/pkg/apis/student/ \
+    --output-base "$(dirname "${BASH_SOURCE[0]}")/../../../" \
     --boilerplate "${SCRIPT_ROOT}/hack/boilerplate.go.txt"
-
-exit
 
 kube::codegen::gen_client \
     --with-watch \
-    --input-pkg-root student/sample-controller/pkg/apis \
-    --output-pkg-root k8s.io/sample-controller/pkg/generated \
+    --input-pkg-root xcodest.me/student/pkg/apis/student/ \
+    --output-pkg-root xcodest.me/student/pkg/generated \
     --output-base "$(dirname "${BASH_SOURCE[0]}")/../../.." \
     --boilerplate "${SCRIPT_ROOT}/hack/boilerplate.go.txt"

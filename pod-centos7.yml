@@ -7,5 +7,8 @@ metadata:
     app: centos7
 spec:
   containers:
-    - name: centos7
+    - name: centos
       image: centos:7
+      command:
+        - sleep
+        - infinity

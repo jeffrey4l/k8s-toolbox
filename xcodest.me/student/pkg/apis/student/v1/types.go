@@ -7,15 +7,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-type StudentSpec struct {
-	Name string `json:"name"`
-	Age  int    `json:"age"`
-}
-
-type StudentStatus struct {
-	Phase string `json:"phase"`
-}
-
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type Student struct {
@@ -26,7 +17,16 @@ type Student struct {
 	Status StudentStatus `json:"status"`
 }
 
-// +genclient
+type StudentSpec struct {
+	Name string `json:"name"`
+	Age  int    `json:"age"`
+}
+
+type StudentStatus struct {
+	Phase string `json:"phase"`
+}
+
+
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 type StudentList struct {
 	metav1.TypeMeta `json:",inline"`

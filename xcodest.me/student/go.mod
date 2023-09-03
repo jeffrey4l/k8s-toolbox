@@ -2,10 +2,7 @@ module xcodest.me/student
 
 go 1.21.0
 
-require (
-	k8s.io/apimachinery v0.28.1
-	k8s.io/code-generator v0.28.1
-)
+require k8s.io/apimachinery v0.28.1
 
 require (
 	github.com/go-logr/logr v1.2.4 // indirect

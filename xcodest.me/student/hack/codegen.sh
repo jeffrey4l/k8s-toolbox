@@ -15,8 +15,8 @@ source "${CODEGEN_PKG}/kube_codegen.sh"
 
 echo $(pwd)
 kube::codegen::gen_helpers \
-    --input-pkg-root pkg/apis \
-    --output-base "$(dirname "${BASH_SOURCE[0]}")/../" \
+    --input-pkg-root controller-example/pkg/apis \
+    --output-base "$(dirname "${BASH_SOURCE[0]}")/../../" \
     --boilerplate "${SCRIPT_ROOT}/hack/boilerplate.go.txt"
 
 exit

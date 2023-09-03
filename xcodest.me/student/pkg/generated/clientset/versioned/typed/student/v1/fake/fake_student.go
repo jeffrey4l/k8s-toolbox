@@ -26,7 +26,7 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
-	v1 "xcodest.me/student/pkg/apis/controller/v1"
+	v1 "xcodest.me/student/pkg/apis/student/v1"
 )
 
 // FakeStudents implements StudentInterface

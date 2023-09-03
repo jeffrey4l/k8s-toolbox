@@ -26,7 +26,7 @@ import (
 	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
-	v1 "xcodest.me/student/pkg/apis/controller/v1"
+	v1 "xcodest.me/student/pkg/apis/student/v1"
 	scheme "xcodest.me/student/pkg/generated/clientset/versioned/scheme"
 )
 

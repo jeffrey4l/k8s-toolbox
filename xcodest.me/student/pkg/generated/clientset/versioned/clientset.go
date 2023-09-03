@@ -25,7 +25,7 @@ import (
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
-	xcodestv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/controller/v1"
+	xcodestv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1"
 )
 
 type Interface interface {

@@ -22,7 +22,7 @@ import (
 	"net/http"
 
 	rest "k8s.io/client-go/rest"
-	v1 "xcodest.me/student/pkg/apis/controller/v1"
+	v1 "xcodest.me/student/pkg/apis/student/v1"
 	"xcodest.me/student/pkg/generated/clientset/versioned/scheme"
 )
 

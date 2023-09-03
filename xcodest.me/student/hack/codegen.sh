@@ -18,7 +18,7 @@ kube::codegen::gen_helpers \
     --output-base "$(dirname "${BASH_SOURCE[0]}")/../../.." \
     --boilerplate "${SCRIPT_ROOT}/hack/boilerplate.go.txt"
 
-# NOTE: 为什么加个 student , clientset 就没有内容了?
+# NOTE: 为什么加个 controller , clientset 就没有内容了?
 kube::codegen::gen_client \
     --with-watch \
     --input-pkg-root xcodest.me/student/pkg/apis \

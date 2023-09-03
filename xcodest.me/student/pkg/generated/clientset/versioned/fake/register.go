@@ -24,7 +24,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	xcodestv1 "xcodest.me/student/pkg/apis/controller/v1"
+	xcodestv1 "xcodest.me/student/pkg/apis/student/v1"
 )
 
 var scheme = runtime.NewScheme()

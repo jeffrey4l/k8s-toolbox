@@ -21,7 +21,7 @@ package fake
 import (
 	rest "k8s.io/client-go/rest"
 	testing "k8s.io/client-go/testing"
-	v1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/controller/v1"
+	v1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1"
 )
 
 type FakeXcodestV1 struct {

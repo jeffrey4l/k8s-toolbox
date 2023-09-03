@@ -25,8 +25,8 @@ import (
 	fakediscovery "k8s.io/client-go/discovery/fake"
 	"k8s.io/client-go/testing"
 	clientset "xcodest.me/student/pkg/generated/clientset/versioned"
-	xcodestv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/controller/v1"
-	fakexcodestv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/controller/v1/fake"
+	xcodestv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1"
+	fakexcodestv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.

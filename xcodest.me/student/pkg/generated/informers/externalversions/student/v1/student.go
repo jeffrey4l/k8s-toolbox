@@ -26,10 +26,10 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	watch "k8s.io/apimachinery/pkg/watch"
 	cache "k8s.io/client-go/tools/cache"
-	controllerv1 "xcodest.me/student/pkg/apis/controller/v1"
+	studentv1 "xcodest.me/student/pkg/apis/student/v1"
 	versioned "xcodest.me/student/pkg/generated/clientset/versioned"
 	internalinterfaces "xcodest.me/student/pkg/generated/informers/externalversions/internalinterfaces"
-	v1 "xcodest.me/student/pkg/generated/listers/controller/v1"
+	v1 "xcodest.me/student/pkg/generated/listers/student/v1"
 )
 
 // StudentInformer provides access to a shared informer and lister for
@@ -71,7 +71,7 @@ func NewFilteredStudentInformer(client versioned.Interface, namespace string, re
 				return client.XcodestV1().Students(namespace).Watch(context.TODO(), options)
 			},
 		},
-		&controllerv1.Student{},
+		&studentv1.Student{},
 		resyncPeriod,
 		indexers,
 	)
@@ -82,7 +82,7 @@ func (f *studentInformer) defaultInformer(client versioned.Interface, resyncPeri
 }
 
 func (f *studentInformer) Informer() cache.SharedIndexInformer {
-	return f.factory.InformerFor(&controllerv1.Student{}, f.defaultInformer)
+	return f.factory.InformerFor(&studentv1.Student{}, f.defaultInformer)
 }
 
 func (f *studentInformer) Lister() v1.StudentLister {

@@ -22,7 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/client-go/tools/cache"
-	v1 "xcodest.me/student/pkg/apis/student/v1"
+	v1 "xcodest.me/student/pkg/apis/controller/v1"
 )
 
 // StudentLister helps list Students.

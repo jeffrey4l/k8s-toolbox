@@ -28,8 +28,8 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 	versioned "xcodest.me/student/pkg/generated/clientset/versioned"
+	controller "xcodest.me/student/pkg/generated/informers/externalversions/controller"
 	internalinterfaces "xcodest.me/student/pkg/generated/informers/externalversions/internalinterfaces"
-	student "xcodest.me/student/pkg/generated/informers/externalversions/student"
 )
 
 // SharedInformerOption defines the functional option type for SharedInformerFactory.
@@ -243,9 +243,9 @@ type SharedInformerFactory interface {
 	// client.
 	InformerFor(obj runtime.Object, newFunc internalinterfaces.NewInformerFunc) cache.SharedIndexInformer
 
-	Xcodest() student.Interface
+	Xcodest() controller.Interface
 }
 
-func (f *sharedInformerFactory) Xcodest() student.Interface {
-	return student.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Xcodest() controller.Interface {
+	return controller.New(f, f.namespace, f.tweakListOptions)
 }

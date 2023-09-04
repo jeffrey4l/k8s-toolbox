@@ -10,7 +10,7 @@ import (
 
 	"k8s.io/client-go/tools/clientcmd"
 	student "xcodest.me/student/pkg/apis/student/v1"
-	studentv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1"
+	stclient "xcodest.me/student/pkg/generated/clientset/versioned"
 	"xcodest.me/student/pkg/utils"
 )
 
@@ -20,11 +20,16 @@ func main(){
 	if err != nil {
 		panic(err)
 	}
-	clientset, err := studentv1.NewForConfig(config)
+	/*
+	improt studentClientset "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1"
+	clientset, err := studentClientset.NewForConfig(config)
 	if err != nil {
 		panic(err)
 	}
 	watcher, err := clientset.Students("").Watch(context.Background(), metav1.ListOptions{})
+	*/
+	clientset := stclient.NewForConfigOrDie(config)
+	watcher, err := clientset.XcodestV1().Students("").Watch(context.Background(), metav1.ListOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -42,6 +47,21 @@ func main(){
 		switch event.Type {
 			case watch.Added:
 				fmt.Printf("Student %s added\n%s\n", student.Name, s)
+				student.Status.Phase = "done"
+				_, err := clientset.XcodestV1().Students(student.Namespace).Update(
+					context.Background(), student, metav1.UpdateOptions{},
+				)
+				if err != nil {
+					fmt.Printf("Get error during update: %s\n", err)
+				}
+				/*
+				_, err = clientset.XcodestV1().Students(student.Namespace).UpdateStatus(
+					context.Background(), student, metav1.UpdateOptions{},
+				)
+				if err != nil {
+					fmt.Printf("Get error during update status: %s\n", err)
+				}
+				*/
 			case watch.Modified:
 				fmt.Printf("Student %s change\n%s\nn", student.Name, s)
 			case watch.Deleted:

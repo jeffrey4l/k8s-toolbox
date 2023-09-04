@@ -1,9 +1,13 @@
 package main
 
 import (
+	"context"
+	"fmt"
 	"log"
+	"log/slog"
 	"os"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
@@ -11,15 +15,22 @@ import (
 	"k8s.io/client-go/util/workqueue"
 	student "xcodest.me/student/pkg/apis/student/v1"
 	studentClientset "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1"
+	st "xcodest.me/student/pkg/generated/clientset/versioned"
 )
 
 func main() {
+	handler := slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{AddSource: true})
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+
+
 	defaultConfig := os.ExpandEnv("$HOME/.kube/config")
 	config, err := clientcmd.BuildConfigFromFlags("", defaultConfig)
 	if err != nil {
 		panic(err)
 	}
 
+	st.NewForConfigOrDie(config).XcodestV1().Students()
 	clientset, err := studentClientset.NewForConfig(config)
 	if err != nil {
 		panic(err)
@@ -39,7 +50,7 @@ func main() {
 				if err == nil {
 					queue.Add(key)
 				} else {
-					log.Printf("AddFunc error: %s", err)
+					slog.Info(fmt.Sprintf("AddFunc error: %s", err))
 				}
 			},
 			UpdateFunc: func(oldObj, newObj interface{}) {
@@ -47,7 +58,7 @@ func main() {
 				if err == nil {
 					queue.Add(key)
 				} else {
-					log.Printf("UpdateFunc error: %s", err)
+					slog.Info(fmt.Sprintf("UpdateFunc error: %s", err))
 				}
 			},
 			DeleteFunc: func(obj interface{}) {
@@ -55,7 +66,7 @@ func main() {
 				if err == nil {
 					queue.Add(key)
 				} else {
-					log.Printf("DeleteFunc error: %s", err)
+					slog.Info(fmt.Sprintf("DeleteFunc error: %s", err))
 				}
 			},
 		},
@@ -65,7 +76,7 @@ func main() {
 	go informer.Run(stopCh)
 	defer close(stopCh)
 
-	go Controller(stopCh, queue, indexer, informer)
+	go Controller(stopCh, queue, indexer, informer, clientset)
 
 	select {}
 }
@@ -73,7 +84,9 @@ func main() {
 func Controller(stopCh chan struct{},
 	queue workqueue.RateLimitingInterface,
 	indexer cache.Indexer,
-	informer cache.Controller) {
+	informer cache.Controller,
+	clientset *studentClientset.XcodestV1Client,
+) {
 	defer runtime.HandleCrash()
 	defer queue.ShutDown()
 
@@ -85,25 +98,41 @@ func Controller(stopCh chan struct{},
 		if quit {
 			return
 		}
-		defer queue.Done(key)
+		queue.Done(key)
 
-		err := syncToStdout(key.(string), indexer)
+		err := syncToStdout(key.(string), indexer, *clientset)
 		if err != nil {
-			log.Printf("error: %v\n", err.Error())
+			slog.Error("error:", "error", err)
 		}
 	}
 }
 
-func syncToStdout(key string, indexer cache.Indexer) error {
+func syncToStdout(key string, indexer cache.Indexer, clientset studentClientset.XcodestV1Client) error {
 	obj, exists, err := indexer.GetByKey(key)
 	if err != nil {
 		return err
 	}
 	if !exists {
 		log.Printf("Student %s not exists\n", key)
-	} else {
-		log.Printf("Sync/Add/Update for Pod %s\n", obj.(*student.Student).GetName())
+		return nil
 	}
+
+	student, ok := obj.(*student.Student)
+	if !ok {
+		log.Printf("Invalid student object: %v\n", obj)
+		return nil
+	}
+	student.Status.Phase = "completed"
+
+	// 更新
+	slog.Info("update in namespace: ", "namespace", student.Namespace)
+	_, err = clientset.Students(student.Namespace).UpdateStatus(context.Background(), student, metav1.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+
+	log.Printf("Sync/Add/Update for Pod %s\n", student.GetName())
 	return nil
 
 }

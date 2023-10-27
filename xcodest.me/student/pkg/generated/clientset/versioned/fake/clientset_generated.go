@@ -27,6 +27,8 @@ import (
 	clientset "xcodest.me/student/pkg/generated/clientset/versioned"
 	xcodestv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1"
 	fakexcodestv1 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1/fake"
+	xcodestv2 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v2"
+	fakexcodestv2 "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v2/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -82,4 +84,9 @@ var (
 // XcodestV1 retrieves the XcodestV1Client
 func (c *Clientset) XcodestV1() xcodestv1.XcodestV1Interface {
 	return &fakexcodestv1.FakeXcodestV1{Fake: &c.Fake}
+}
+
+// XcodestV2 retrieves the XcodestV2Client
+func (c *Clientset) XcodestV2() xcodestv2.XcodestV2Interface {
+	return &fakexcodestv2.FakeXcodestV2{Fake: &c.Fake}
 }

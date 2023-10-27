@@ -25,6 +25,7 @@ import (
 	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	xcodestv1 "xcodest.me/student/pkg/apis/student/v1"
+	xcodestv2 "xcodest.me/student/pkg/apis/student/v2"
 )
 
 var scheme = runtime.NewScheme()
@@ -32,6 +33,7 @@ var codecs = serializer.NewCodecFactory(scheme)
 
 var localSchemeBuilder = runtime.SchemeBuilder{
 	xcodestv1.AddToScheme,
+	xcodestv2.AddToScheme,
 }
 
 // AddToScheme adds all types of this clientset into the given scheme. This allows composition

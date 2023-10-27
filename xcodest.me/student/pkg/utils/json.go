@@ -28,9 +28,9 @@ func Obj2Yaml(obj interface{}) (string, error) {
 		return "", err
 	}
 
-	objY, err := yaml.Marshal(objU)
+	objYaml, err := yaml.Marshal(objU)
 	if err != nil {
 		return "", err
 	}
-	return string(objY), nil
+	return string(objYaml), nil
 }

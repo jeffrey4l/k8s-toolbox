@@ -13,6 +13,9 @@ spec:
       served: true
       # 只有一个版本能被标注为storage
       storage: true
+      subresources:
+        # enables the status subresource
+        status: {}
       schema:
         openAPIV3Schema:
           type: object

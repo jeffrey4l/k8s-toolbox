@@ -8,16 +8,13 @@ import (
 	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/workqueue"
-	student "xcodest.me/student/pkg/apis/student/v1"
-	st "xcodest.me/student/pkg/generated/clientset/versioned"
-	studentClientset "xcodest.me/student/pkg/generated/clientset/versioned/typed/student/v1"
-	stf "xcodest.me/student/pkg/generated/informers/externalversions"
-	studentLister "xcodest.me/student/pkg/generated/listers/student/v1"
+	clientset "xcodest.me/student/pkg/generated/clientset/versioned"
+	informers "xcodest.me/student/pkg/generated/informers/externalversions"
+	studentV1Lister "xcodest.me/student/pkg/generated/listers/student/v1"
 )
 
 func main() {
@@ -31,13 +28,7 @@ func main() {
 		panic(err)
 	}
 
-	ct2 := st.NewForConfigOrDie(config)
-	clientset, err := studentClientset.NewForConfig(config)
-	if err != nil {
-		panic(err)
-	}
-
-	listWatcher := cache.NewListWatchFromClient(clientset.RESTClient(), "students", "", fields.Everything())
+	cs := clientset.NewForConfigOrDie(config)
 
 	queue := workqueue.NewRateLimitingQueue(workqueue.DefaultControllerRateLimiter())
 	deletedIndexer := cache.NewIndexer(cache.DeletionHandlingMetaNamespaceKeyFunc, cache.Indexers{})
@@ -47,14 +38,12 @@ func main() {
 			key, err := cache.MetaNamespaceKeyFunc(obj)
 			if err == nil {
 				queue.Add(key)
-				deletedIndexer.Delete(obj)
 			}
 		},
 		UpdateFunc: func(oldObj, newObj interface{}) {
 			key, err := cache.MetaNamespaceKeyFunc(newObj)
 			if err == nil {
 				queue.Add(key)
-				deletedIndexer.Delete(newObj)
 			}
 		},
 		DeleteFunc: func(obj interface{}) {
@@ -66,20 +55,21 @@ func main() {
 		},
 	}
 
-	factory := stf.NewSharedInformerFactory(ct2, 0)
+	factory := informers.NewSharedInformerFactory(cs, 0)
 	informer := factory.Xcodest().V1().Students()
 	informer.Informer().AddEventHandler(eventHandlerFuncs)
-	// indexer, informer := cache.NewIndexerInformer(listWatcher, &student.Student{}, 0, eventHandlerFuncs, cache.Indexers{})
+	slog.Info(fmt.Sprintf("indexer: %#v", informer.Informer().GetIndexer().GetIndexers()))
+	return
 
 	stopCh := make(chan struct{})
-	go informer.Run(stopCh)
+	go informer.Informer().Run(stopCh)
 	defer close(stopCh)
 
 	c := Controller{
 		queue:          queue,
-		indexer:        indexer,
-		informer:       informer,
-		clientset:      clientset,
+		lister:         informer.Lister(),
+		informer:       informer.Informer(),
+		clientset:      cs,
 		deletedIndexer: deletedIndexer,
 	}
 	go c.Run(stopCh)
@@ -89,9 +79,9 @@ func main() {
 
 type Controller struct {
 	queue          workqueue.RateLimitingInterface
-	lister  *studentLister.StudentLister
-	informer       cache.Controller
-	clientset      *studentClientset.XcodestV1Client
+	lister         studentV1Lister.StudentLister
+	informer       cache.SharedIndexInformer
+	clientset      *clientset.Clientset
 	deletedIndexer cache.Indexer
 }
 
@@ -108,7 +98,6 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 		if quit {
 			return
 		}
-
 		err := c.syncToStdout(key.(string))
 		if err != nil {
 			slog.Error("Get error", "error", err)
@@ -118,36 +107,16 @@ func (c *Controller) Run(stopCh <-chan struct{}) {
 }
 
 func (c *Controller) syncToStdout(key string) error {
-	obj, exists, err := c.indexer.GetByKey(key)
+	namespace, name, _ := cache.SplitMetaNamespaceKey(key)
+	student, err := c.lister.Students(namespace).Get(name)
 	if err != nil {
+		obj, exists, err := c.deletedIndexer.GetByKey(key)
+		slog.Info(fmt.Sprintf("%s, %s", obj, exists))
 		return err
 	}
-	if !exists {
-		obj, exists, err := c.deletedIndexer.GetByKey(key)
-		if err != nil {
-			return err
-		}
-		if !exists {
-			slog.Info(fmt.Sprintf("Student %s does not exists", key))
-		}
-		student, ok := obj.(*student.Student)
-		if ok {
-			slog.Info(fmt.Sprintf("Student %s is removed", student.GetName()))
-			return nil
-		}
-		slog.Info(fmt.Sprintf("Get object is not student: %v", obj))
-		return nil
-	}
-
-	student, ok := obj.(*student.Student)
-	if !ok {
-		slog.Info(fmt.Sprintf("Invalid student object: %v", obj))
-		return nil
-	}
-
 	student.Status.Phase = "done"
 
-	_, err = c.clientset.Students(student.Namespace).UpdateStatus(
+	_, err = c.clientset.XcodestV1().Students(student.Namespace).UpdateStatus(
 		context.Background(), student, metav1.UpdateOptions{})
 	if err != nil {
 		return err

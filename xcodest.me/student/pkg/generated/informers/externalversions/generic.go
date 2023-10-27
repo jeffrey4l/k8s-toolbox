@@ -24,6 +24,7 @@ import (
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 	v1 "xcodest.me/student/pkg/apis/student/v1"
+	v2 "xcodest.me/student/pkg/apis/student/v2"
 )
 
 // GenericInformer is type of SharedIndexInformer which will locate and delegate to other
@@ -55,6 +56,10 @@ func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource
 	// Group=xcodest.me, Version=v1
 	case v1.SchemeGroupVersion.WithResource("students"):
 		return &genericInformer{resource: resource.GroupResource(), informer: f.Xcodest().V1().Students().Informer()}, nil
+
+		// Group=xcodest.me, Version=v2
+	case v2.SchemeGroupVersion.WithResource("students"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Xcodest().V2().Students().Informer()}, nil
 
 	}
 

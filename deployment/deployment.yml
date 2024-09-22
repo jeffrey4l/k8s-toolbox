@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: centos-data
+spec:
+  storageClassName: openebs-lvmpv
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deployment-test
+spec:
+  selector:
+    matchLabels:
+      app: centos7
+  template:
+    metadata:
+      labels:
+        app: centos7
+    spec:
+      containers:
+        - name: centos
+          image: centos:7
+          command:
+            - sleep
+            - infinity
+          volumeMounts:
+            - name: data
+              mountPath: /data
+          resources:
+            limits:
+              cpu: "5"
+              memory: "20Gi"
+              nvidia.com/gpu: 1
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: centos-data

@@ -1,10 +1,13 @@
 ---
-apiVersion: v1
-kind: DeploymentConfig
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: echoserver
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      app: echoserver
   template:
     metadata:
       labels:
@@ -12,8 +15,10 @@ spec:
     spec:
       containers:
         - name: echoserver
-          image: googlecontainer/echoserver:1.5
-          readnessProbe:
+          image: ealen/echo-server:latest
+          env:
+            - { name: PORT, value: "8080" }
+          readinessProbe:
             httpGet:
               port: 8080
               path: /
@@ -38,16 +43,3 @@ spec:
       targetPort: 8080
   selector:
     app: echoserver
-
----
-kind: Route
-apiVersion: route.openshift.io/v1
-metadata:
-  name: echoserver
-spec:
-  host: echoserver.local
-  to:
-    kind: Service
-    name: echoserver
-  port:
-    targetPort: http

@@ -36,7 +36,7 @@ metadata:
 spec:
   rules:
     - http:
-        paths: 
+        paths:
           - path: /
             backend:
               serviceName: nginx-deployment
